@@ -11,7 +11,6 @@
     <RootNamespace>YGOServer</RootNamespace>
     <AssemblyName>YGOServer</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
@@ -32,9 +31,6 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup>
-    <StartupObject />
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -90,6 +86,10 @@
     <Compile Include="SevenZip\Compress\RangeCoder\RangeCoderBit.cs" />
     <Compile Include="SevenZip\Compress\RangeCoder\RangeCoderBitTree.cs" />
     <Compile Include="SevenZip\ICoder.cs" />
+    <Compile Include="Game\IGameConfig.cs">
+      <DependentUpon>Player.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Game\MyCardStyleGameConfig.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\OcgWrapper\OcgWrapper.csproj">
