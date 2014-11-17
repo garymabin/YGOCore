@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 
-namespace YGOServer
+namespace YGOCore
 {
     //interface for classes whose instances can be written and read from stream like an parcel. 
     public interface IParcel

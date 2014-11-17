@@ -87,7 +87,7 @@ namespace YGOCore
             foreach (string room in toRemove)
             {
                 //m_rooms.Remove(room);
-                m_rooms.TryRemove(room);
+                m_rooms.TryRemove(room, NULL);
                 Logger.WriteLine("Game--");
             }
         }

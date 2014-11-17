@@ -1,6 +1,6 @@
 using System;
 
-namespace YGOServer
+namespace YGOCore
 {
     public interface IGameWatcher
     {

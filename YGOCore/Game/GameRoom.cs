@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
+using YGOServer;
 
 namespace YGOCore.Game
 {
-    public class GameRoom
+    public class GameRoom: IParcel
     {
         public Game Game { get; private set; }
         public List<GameClient> m_clients { get; private set; }
