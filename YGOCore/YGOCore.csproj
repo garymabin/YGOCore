@@ -90,6 +90,9 @@
       <DependentUpon>Player.cs</DependentUpon>
     </Compile>
     <Compile Include="Game\MyCardStyleGameConfig.cs" />
+    <Compile Include="IGameWatcher.cs" />
+    <Compile Include="IParcel.cs" />
+    <Compile Include="SocketBaseWatcher.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\OcgWrapper\OcgWrapper.csproj">
