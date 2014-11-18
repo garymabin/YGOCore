@@ -41,6 +41,7 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="Mono.Data.Sqlite" Condition=" '$(OS)' == 'Unix' " />
+    <Reference Include="System.Runtime.Serialization" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="GameManager.cs" />
@@ -91,7 +92,6 @@
     </Compile>
     <Compile Include="Game\MyCardStyleGameConfig.cs" />
     <Compile Include="IGameWatcher.cs" />
-    <Compile Include="IParcel.cs" />
     <Compile Include="SocketBaseWatcher.cs" />
   </ItemGroup>
   <ItemGroup>

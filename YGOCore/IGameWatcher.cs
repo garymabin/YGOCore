@@ -15,9 +15,9 @@ namespace YGOCore
         void Stop();
 
         /**
-         * when converted unicode string event triggered.
+         * when converted event string event triggered.
          */
-        void onEvent(String unicodeStrEvent);
+        void onEvent(String eventstring, Object formatParams);
     }
 }
 

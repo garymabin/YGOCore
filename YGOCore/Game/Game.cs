@@ -5,11 +5,14 @@ using OcgWrapper;
 using OcgWrapper.Enums;
 using YGOCore.Game.Enums;
 using YGOCore;
+using System.Runtime.Serialization;
 
 namespace YGOCore.Game
 {
+    [DataContract]
     public class Game
     {
+        [DataMember(Order=0)]
         public IGameConfig Config { get; private set; }
         public Banlist Banlist { get; private set; }
         public bool IsMatch { get; private set; }
@@ -24,6 +27,7 @@ namespace YGOCore.Game
         public int CurrentPlayer { get; set; }
         public int[] LifePoints { get; set; }
 
+        [DataMember(Order=1)]
         public Player[] Players { get; private set; }
         public Player[] CurPlayers { get; private set; }
         public bool[] IsReady { get; private set; }
