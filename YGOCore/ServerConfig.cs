@@ -6,6 +6,7 @@ namespace YGOCore
     public class ServerConfig
     {
         public int ServerPort { get; private set; }
+        public int WatchPort{ get; private set;}
         public string Path { get; private set; }
         public string ScriptFolder { get; private set; }
         public string CardCDB { get; private set; }
@@ -28,6 +29,7 @@ namespace YGOCore
         {
             ClientVersion = 0x1332;
             ServerPort = 8911;
+            WatchPort = 8915;
             Path = ".";
             ScriptFolder = "script";
             CardCDB = "cards.cdb";
@@ -66,6 +68,9 @@ namespace YGOCore
                         {
                             case "serverport":
                                 ServerPort = Convert.ToInt32(value);
+                                break;
+                            case "watchport":
+                                WatchPort = Convert.ToInt32(value);
                                 break;
                             case "path":
                                 Path = value;

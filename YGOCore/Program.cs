@@ -2,6 +2,8 @@ using System;
 using System.Threading;
 using System.IO;
 using System.Diagnostics;
+using System.Collections.Generic;
+using YGOCore.Game.Enums;
 
 namespace YGOCore
 {
@@ -11,6 +13,7 @@ namespace YGOCore
 
         public static ServerConfig Config { get; private set; }
         public static Random Random;
+        public List<IGameWatcher> WatcherList;
 
 
         static void Main(string[] args)
@@ -48,25 +51,40 @@ namespace YGOCore
                 int.TryParse(args[0], out coreport);
 
             Random = new Random();
-
+            WatcherList = new List<IGameWatcher>();
+            WatcherList.Add(new SocketBaseWatcher(Config.WatchPort));
+            foreach(IGameWatcher watcher in WatcherList)
+            {
+                watcher.Start();
+            }
             Server server = new Server();
             if (!server.Start(coreport))
                 Thread.Sleep(5000);
 
             if (server.IsListening == true && Config.STDOUT == true)
-               Console.WriteLine("::::network-ready");
-
+            {
+                foreach(IGameWatcher watcher in WatcherList)
+                {
+                    watcher.onEvent(GameWatchEvent.EventNetworkReady, "::::network-ready");
+                }
+                Console.WriteLine("::::network-ready");
+            }
             
             while (server.IsListening)
             {
                 server.Process();
                 Thread.Sleep(1);
-
-
             }
             if (Config.STDOUT == true)
-            Console.WriteLine("::::network-end");
-
+                Console.WriteLine("::::network-end");
+            foreach(IGameWatcher watcher in WatcherList)
+            {
+                watcher.onEvent(GameWatchEvent.EventNetworkEnd, "::::network-end");
+            }
+            foreach(IGameWatcher watcher in WatcherList)
+            {
+                watcher.Stop();
+            }
             Process.GetCurrentProcess().Kill();
 
         }

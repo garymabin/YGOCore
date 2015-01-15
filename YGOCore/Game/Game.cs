@@ -146,8 +146,10 @@ namespace YGOCore.Game
             int pos = GetAvailablePlayerPos();
             if (Program.Config.STDOUT == true)
                 Console.WriteLine("::::join-slot|{1}|{0}", player.Name, pos);
-
-
+            foreach(IGameWatcher watcher in Program.WatcherList)
+            {
+                watcher.onEvent(GameWatchEvent.EventJoinSlot, String.Format("::::join-slot|{1}|{0}", player.Name, pos));
+            }
             if (State != GameState.Lobby)
             {
                 player.Type = (int)PlayerType.Observer;
@@ -186,7 +188,11 @@ namespace YGOCore.Game
                 GameServerPacket watch = new GameServerPacket(StocMessage.HsWatchChange);
                 watch.Write((short)(Observers.Count + 1));
                 if (Program.Config.STDOUT == true)
-                Console.WriteLine("::::spectator|{0}", Observers.Count);
+                    Console.WriteLine("::::spectator|{0}", Observers.Count);
+                foreach(IGameWatcher watcher in Program.WatcherList)
+                {
+                    watcher.onEvent(GameWatchEvent.EventSpectator, String.Format("::::spectator|{0}", Observers.Count));
+                }
                 SendToAll(watch);
 
                 player.Type = (int)PlayerType.Observer;
@@ -221,7 +227,12 @@ namespace YGOCore.Game
                 nwatch.Write((short)Observers.Count);
                 player.Send(nwatch);
                 if (Program.Config.STDOUT == true)
-                Console.WriteLine("::::spectator|{0}", Observers.Count);
+                    Console.WriteLine("::::spectator|{0}", Observers.Count);
+                foreach(IGameWatcher watcher in Program.WatcherList)
+                {
+                    watcher.onEvent(GameWatchEvent.EventSpectator, String.Format("::::spectator|{0}", Observers.Count));
+                }
+                    
             }
         }
 
@@ -238,7 +249,11 @@ namespace YGOCore.Game
                     nwatch.Write((short)Observers.Count);
                     SendToAll(nwatch);
                     if (Program.Config.STDOUT == true)
-                    Console.WriteLine("::::spectator|{0}", Observers.Count);
+                        Console.WriteLine("::::spectator|{0}", Observers.Count);
+                    foreach(IGameWatcher watcher in Program.WatcherList)
+                    {
+                        watcher.onEvent(GameWatchEvent.EventSpectator, String.Format("::::spectator|{0}", Observers.Count));
+                    }
                 }
              //   if (Program.Config.STDOUT == true)        
              //       Console.WriteLine("{0} - disconnected", player.Name); //Need API
@@ -253,7 +268,10 @@ namespace YGOCore.Game
                 change.Write((byte)((player.Type << 4) + (int)PlayerChange.Leave));
                 if (Program.Config.STDOUT == true)
                     Console.WriteLine("::::left-slot|{1}|{0}", player.Name, player.Type);
-
+                foreach(IGameWatcher watcher in Program.WatcherList)
+                {
+                    watcher.onEvent(GameWatchEvent.EventLeftSlot, String.Format("::::left-slot|{1}|{0}", player.Name, player.Type));
+                }
                 SendToAll(change);
                 player.Disconnect();
             }
@@ -281,6 +299,10 @@ namespace YGOCore.Game
                 GameServerPacket change = new GameServerPacket(StocMessage.HsPlayerChange);
                 if (Program.Config.STDOUT == true)
                     Console.WriteLine("::::left-slot|{1}|{0}", player.Name, player.Type);
+                foreach(IGameWatcher watcher in Program.WatcherList)
+                {
+                    watcher.onEvent(GameWatchEvent.EventLeftSlot, String.Format("::::left-slot|{1}|{0}", player.Name, player.Type));
+                }
                 change.Write((byte)((player.Type << 4) + pos));
                 SendToAll(change);
 
@@ -309,8 +331,16 @@ namespace YGOCore.Game
             }
             if (Program.Config.STDOUT == true)
                 Console.WriteLine("::::join-slot|{1}|{0}", player.Name, pos);
+            foreach(IGameWatcher watcher in Program.WatcherList)
+            {
+                watcher.onEvent(GameWatchEvent.EventJoinSlot, String.Format("::::join-slot|{1}|{0}", player.Name, pos));
+            }
             if (Program.Config.STDOUT == true)
                 Console.WriteLine("::::spectator|{0}", Observers.Count);
+            foreach(IGameWatcher watcher in Program.WatcherList)
+            {
+                watcher.onEvent(GameWatchEvent.EventSpectator, String.Format("::::spectator|{0}", Observers.Count));
+            }
         }
 
         public void MoveToObserver(Player player)
@@ -323,6 +353,10 @@ namespace YGOCore.Game
                 return;
             if (Program.Config.STDOUT == true)
                 Console.WriteLine("::::left-slot|{1}|{0}", player.Name, player.Type);
+            foreach(IGameWatcher watcher in Program.WatcherList)
+            {
+                watcher.onEvent(GameWatchEvent.EventLeftSlot, String.Format("::::left-slot|{1}|{0}", player.Name, player.Type));
+            }
             Players[player.Type] = null;
             IsReady[player.Type] = false;
             Observers.Add(player);
@@ -335,6 +369,10 @@ namespace YGOCore.Game
             player.SendTypeChange();
             if (Program.Config.STDOUT == true)
                 Console.WriteLine("::::spectator|{0}", Observers.Count);
+            foreach(IGameWatcher watcher in Program.WatcherList)
+            {
+                watcher.onEvent(GameWatchEvent.EventSpectator, String.Format("::::spectator|{0}", Observers.Count));
+            }
         }
 
         public void Chat(Player player, string msg)
@@ -345,6 +383,10 @@ namespace YGOCore.Game
             SendToAllBut(packet, player);
             if (Program.Config.STDOUT == true) 
                 Console.WriteLine("::::chat|{0}|{1}", player.Name, msg);
+            foreach(IGameWatcher watcher in Program.WatcherList)
+            {
+                watcher.onEvent(GameWatchEvent.EventChat, String.Format("::::chat|{0}|{1}", player.Name, msg));
+            }
         }
 
         public void ServerMessage(string msg)
@@ -356,6 +398,10 @@ namespace YGOCore.Game
             SendToAll(packet);
             if (Program.Config.STDOUT == true) 
                 Console.WriteLine("::::chat|[Server]|{0}", msg);
+            foreach(IGameWatcher watcher in Program.WatcherList)
+            {
+                watcher.onEvent(GameWatchEvent.EventChat, String.Format("::::chat|[Server]|{0}", msg));
+            }
         }
 
         public void SetReady(Player player, bool ready)
@@ -398,6 +444,10 @@ namespace YGOCore.Game
             change.Write((byte)((player.Type << 4) + (int)(ready ? PlayerChange.Ready : PlayerChange.NotReady)));
             if (Program.Config.STDOUT == true)
             Console.WriteLine("::::lock-slot|{1}|{0}", ready, player.Type);
+            foreach(IGameWatcher watcher in Program.WatcherList)
+            {
+                watcher.onEvent(GameWatchEvent.EventLockSlot, String.Format("::::lock-slot|{1}|{0}", ready, player.Type));
+            }
             SendToAll(change);
         }
 
@@ -410,6 +460,10 @@ namespace YGOCore.Game
             RemovePlayer(Players[pos]);
             if (Program.Config.STDOUT == true) 
                 Console.WriteLine("::::left-slot|{1}|{0}", player.Name, pos);
+            foreach(IGameWatcher watcher in Program.WatcherList)
+            {
+                watcher.onEvent(GameWatchEvent.EventLeftSlot, String.Format("::::left-slot|{1}|{0}", player.Name, pos));
+            }
         }
 
         public void StartDuel(Player player)
@@ -429,7 +483,10 @@ namespace YGOCore.Game
             State = GameState.Hand;
             if (Program.Config.STDOUT == true) 
                 Console.WriteLine("::::startduel");
-
+            foreach(IGameWatcher watcher in Program.WatcherList)
+            {
+                watcher.onEvent(GameWatchEvent.EventStartDuel, String.Format("::::startduel"));
+            }
             SendToAll(new GameServerPacket(StocMessage.DuelStart));
 
             SendHand();
@@ -655,7 +712,11 @@ namespace YGOCore.Game
         {
             //Record user win here
             if (Program.Config.STDOUT == true)
-            Console.WriteLine("::::endduel|{0}|{1}", team, reason);
+                Console.WriteLine("::::endduel|{0}|{1}", team, reason);
+            foreach(IGameWatcher watcher in Program.WatcherList)
+            {
+                watcher.onEvent(GameWatchEvent.EventEndDuel, String.Format("::::endduel|{0}|{1}", team, reason));
+            }
         }
 
         public void RefreshAll()
@@ -1083,7 +1144,10 @@ namespace YGOCore.Game
                 m_startplayer = 1 - player;
             else
                 m_startplayer = 1 - m_startplayer;
-            m_matchResult[m_duelCount++] = player;
+            if (m_duelCount >= 0 && m_duelCount <= 2)
+            {
+                m_matchResult[m_duelCount++] = player;
+            }
         }
 
         public void MatchKill()

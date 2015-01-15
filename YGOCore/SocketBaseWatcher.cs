@@ -8,6 +8,7 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Runtime.Serialization.Json;
 using System.Collections.Generic;
+using YGOCore.Game.Enums;
 
 namespace YGOCore
 {
@@ -17,13 +18,13 @@ namespace YGOCore
         private TcpListener m_watch_listener;
         public volatile bool IsWatching;
         private Socket m_watch_socket;
-        private BlockingCollection<KeyValuePair<String, Object>> m_event_queue;
+        private BlockingCollection<KeyValuePair<GameWatchEvent, Object>> m_event_queue;
 
         public SocketBaseWatcher(int port)
         {
             m_watch_thread = new Thread(WatchLoop);
             m_watch_listener = new TcpListener(IPAddress.Any, port);
-            m_event_queue = new BlockingCollection<KeyValuePair<String, Object>>();
+            m_event_queue = new BlockingCollection<KeyValuePair<GameWatchEvent, Object>>();
             m_watch_listener.Start(1);
             IsWatching = false;
         }
@@ -47,8 +48,8 @@ namespace YGOCore
             }
         }
 
-        public void OnEvent(String eventstring, Object formatParams) {
-            m_event_queue.Add(new KeyValuePair<string, object>(eventstring, formatParams));
+        public void OnEvent(GameWatchEvent eventType, Object formatParams) {
+            m_event_queue.Add(new KeyValuePair<GameWatchEvent, object>(eventType, formatParams));
         }
 
         private void WatchLoop ()
@@ -60,24 +61,15 @@ namespace YGOCore
 				}
 				NetworkStream stream = new NetworkStream(m_watch_socket, System.IO.FileAccess.Write);
                 BinaryWriter writer = new BinaryWriter(stream);
-                GameRoom[] rooms = GameManager.GetRooms();
-                var serializer = new DataContractJsonSerializer(typeof(GameRoom));
-                writer.Write(":::init_watcher|");
-                writer.Write(rooms.Length);
-                writer.Write("|");
-                foreach (GameRoom room in rooms) {
-                    serializer.WriteObject(stream, room);
-				}
-                stream.Flush();
 				while (IsWatching) {
-                    KeyValuePair<string, object> pair = m_event_queue.Take();
-                    if (pair != null) {
-                        writer.Write(pair.Key);
-                        var innerSerial = new DataContractJsonSerializer(pair.Value.GetType());
-                        innerSerial.WriteObject(stream, pair.Value);
-                        stream.Flush();
-					}
+                    KeyValuePair<GameWatchEvent, object> pair = m_event_queue.Take();
+                    writer.Write(pair.Value.ToString);
+                    stream.Flush();
 				}
+            }
+            if (m_watch_socket != null)
+            {
+                m_watch_socket.Close();
             }
         }
 

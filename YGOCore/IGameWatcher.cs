@@ -1,4 +1,5 @@
 using System;
+using YGOCore.Game.Enums;
 
 namespace YGOCore
 {
@@ -17,7 +18,7 @@ namespace YGOCore
         /**
          * when converted event string event triggered.
          */
-        void onEvent(String eventstring, Object formatParams);
+        void onEvent(GameWatchEvent eventType, Object formatParams);
     }
 }
 
