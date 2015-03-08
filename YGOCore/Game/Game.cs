@@ -1028,7 +1028,10 @@ namespace YGOCore.Game
                 m_startplayer = 1 - player;
             else
                 m_startplayer = 1 - m_startplayer;
-            m_matchResult[m_duelCount++] = player;
+            if (m_duelCount >= 0 && m_duelCount <= 2)
+            {
+                m_matchResult[m_duelCount++] = player;
+            }
         }
 
         public void MatchKill()
