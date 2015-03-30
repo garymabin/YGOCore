@@ -11,9 +11,9 @@ namespace YGOCore.Game
         public int TurnSkip { get; set; }
         public Deck Deck { get; private set; }
         public PlayerState State { get; set; }
-        private GameClient m_client;
+        private IGameClient m_client;
 
-        public Player(GameClient client)
+        public Player(IGameClient client)
         {
             Game = client.Game;
             Type = (int)PlayerType.Undefined;

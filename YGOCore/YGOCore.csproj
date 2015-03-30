@@ -90,6 +90,8 @@
       <DependentUpon>Player.cs</DependentUpon>
     </Compile>
     <Compile Include="Game\MyCardStyleGameConfig.cs" />
+    <Compile Include="Game\IGameClient.cs" />
+    <Compile Include="Game\GameAsyncClient.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\OcgWrapper\OcgWrapper.csproj">

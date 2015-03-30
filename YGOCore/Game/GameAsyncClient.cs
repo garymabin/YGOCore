@@ -1,42 +1,50 @@
 ﻿using System;
+using System.Net.Sockets;
 using System.Collections.Generic;
 using System.IO;
-using System.Net.Sockets;
 
 namespace YGOCore.Game
 {
-    public class GameClient : IGameClient
+    public class GameAsyncClient: IGameClient
     {
-
         public bool IsConnected { get; private set; }
-        public Game Game { get; private set; }
-        public Player Player { get; private set; }
+
+        public Game Game { get;private set; }
+
+        public Player Player{ get;private set; }
+
         private GameRoom m_room;
-        private TcpClient m_client;
-        private BinaryReader m_reader;
+        private Socket m_socket;
         private Queue<GameClientPacket> m_recvQueue;
         private Queue<byte[]> m_sendQueue;
-        private bool m_disconnected;
         private bool m_closePending;
+        private bool m_disconnected;
         private int m_receivedLen;
 
-        public GameClient(TcpClient client)
+        private Byte[] m_read_buffer;
+
+        private const  int BufferSize = 256;
+
+        public GameAsyncClient(Socket socket)
         {
             IsConnected = true;
+            m_socket = socket;
+            m_socket.Blocking = false;
             Player = new Player(this);
-            m_client = client;
-            m_reader = new BinaryReader(m_client.GetStream());
             m_recvQueue = new Queue<GameClientPacket>();
             m_sendQueue = new Queue<byte[]>();
-            m_receivedLen = -1;
+
+            m_read_buffer = new byte[BufferSize]{ 0 };
         }
+
+        #region IGameClient implementation
 
         public void Close()
         {
             if (!IsConnected)
                 return;
             IsConnected = false;
-            m_client.Close();
+            m_socket.Close();
             if(InGame())
                 m_room.RemoveClient(this);
         }
@@ -63,6 +71,34 @@ namespace YGOCore.Game
         public void Send(byte[] raw)
         {
             m_sendQueue.Enqueue(raw);
+        }
+
+        private void NetworkReceive()
+        {
+            byte[] buffer = new byte[256]{0};
+            if (m_socket.Available >= 2 && m_receivedLen == -1)
+                m_receivedLen = m_socket.Receive(m_read_buffer, 2);
+
+            if (m_receivedLen != -1 && m_socket.Available >= m_receivedLen)
+            {
+                GameClientPacket packet = new GameClientPacket(m_reader.ReadBytes(m_receivedLen));
+                m_receivedLen = -1;
+                lock (m_recvQueue)
+                    m_recvQueue.Enqueue(packet);
+            }
+        }
+
+        private void NetworkSend()
+        {
+            while (m_sendQueue.Count > 0)
+            {
+                byte[] raw = m_sendQueue.Dequeue();
+                MemoryStream stream = new MemoryStream(raw.Length + 2);
+                BinaryWriter writer = new BinaryWriter(stream);
+                writer.Write((ushort)raw.Length);
+                writer.Write(raw);
+                m_socket.Send(stream.ToArray());
+            }
         }
 
         public void Tick()
@@ -105,36 +141,11 @@ namespace YGOCore.Game
             }
         }
 
+        #endregion
+
         private void CheckDisconnected()
         {
-            m_disconnected = (m_client.Client.Poll(1, SelectMode.SelectRead) && m_client.Available == 0);
-        }
-
-        private void NetworkReceive()
-        {
-            if (m_client.Available >= 2 && m_receivedLen == -1)
-                m_receivedLen = m_reader.ReadUInt16();
-
-            if (m_receivedLen != -1 && m_client.Available >= m_receivedLen)
-            {
-                GameClientPacket packet = new GameClientPacket(m_reader.ReadBytes(m_receivedLen));
-                m_receivedLen = -1;
-                lock (m_recvQueue)
-                    m_recvQueue.Enqueue(packet);
-            }
-        }
-
-        private void NetworkSend()
-        {
-            while (m_sendQueue.Count > 0)
-            {
-                byte[] raw = m_sendQueue.Dequeue();
-                MemoryStream stream = new MemoryStream(raw.Length + 2);
-                BinaryWriter writer = new BinaryWriter(stream);
-                writer.Write((ushort)raw.Length);
-                writer.Write(raw);
-                m_client.Client.Send(stream.ToArray());
-            }
+            m_disconnected = (m_socket.Poll(1, SelectMode.SelectRead) && m_socket.Available == 0);
         }
 
         private void NetworkParse()
@@ -155,5 +166,7 @@ namespace YGOCore.Game
                     Player.Parse(packet);
             }
         }
+
     }
 }
+

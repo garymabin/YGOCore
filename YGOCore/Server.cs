@@ -11,11 +11,11 @@ namespace YGOCore
     {
         public bool IsListening { get; private set; }
         private TcpListener m_listener;
-        private List<GameClient> m_clients;
+        private List<IGameClient> m_clients;
 
         public Server()
         {
-            m_clients = new List<GameClient>();
+            m_clients = new List<IGameClient>();
         }
 
         public bool Start(int port = 0)
@@ -50,7 +50,7 @@ namespace YGOCore
                 m_listener.Stop();
                 IsListening = false;
 
-                foreach (GameClient client in m_clients)
+                foreach (IGameClient client in m_clients)
                     client.Close();
             }
         }
@@ -62,9 +62,9 @@ namespace YGOCore
             while (IsListening && m_listener.Pending())
                 m_clients.Add(new GameClient(m_listener.AcceptTcpClient()));
 
-            List<GameClient> toRemove = new List<GameClient>();
+            List<IGameClient> toRemove = new List<IGameClient>();
 
-            foreach (GameClient client in m_clients)
+            foreach (IGameClient client in m_clients)
             {
                 client.Tick();
                 if (!client.IsConnected || client.InGame())
